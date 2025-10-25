@@ -1,0 +1,14 @@
+# BARD/docker-compose.yml
+version: '3.8'
+
+services:
+  bard:
+    build: .
+    container_name: bard-app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src:/app/src
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    

@@ -1,0 +1,17 @@
+# Environment
+.env
+*.env
+*.env.local
+*.env.staging
+
+# Data dir (created on build)
+/data
+
+# Cache directories and files
+*.cache
+cache/
+.cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
