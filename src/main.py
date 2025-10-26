@@ -1,16 +1,15 @@
 # BARD/src/main.py 
 from os import getenv
 from flask import Flask
+from anthropic import Anthropic
 from web_app.router import Router
 from langchain.agents import create_agent
 import lib
 
-# Create the agent with the system prompt from lib.py
-agent = create_agent(
-    model=getenv("DEFAULT_MODEL"),
-    tools=[],
-    system_prompt=lib.get_system_prompt(),
-)
+
+# Initialize Anthropic client
+agent = Anthropic(api_key=getenv("ANTHROPIC_API_KEY"))
+
 # Initialize Flask app
 app = Flask(__name__)
 Router.register_routes(app, agent)
