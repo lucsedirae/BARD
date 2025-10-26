@@ -9,7 +9,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎭 BARD</h1>
+            <h1>BARD</h1>
+            <img
+            src="{{ url_for('static', filename='img/icon.svg') }}" 
+            alt="Godot Logo" 
+            class="logo"
+            width="40"
+            height="40">
             <p>Building Assistant for Rapid Development</p>
         </div>
         
@@ -20,9 +26,9 @@
                 </div>
             </div>
         </div>
-        
-        <div class="loading" id="loading">BARD is thinking...</div>
-        
+
+        <div class="loading" id="loading">{{ loading_message }}</div>
+
         <div class="input-area">
             <input 
                 type="text" 
