@@ -6,29 +6,53 @@ import lib
 class Router:
     @staticmethod
     def register_routes(app, agent):
+        """
+        Initializes the routes for the web app.
+
+        Args:
+            app (Flask): The Flask application instance.
+            agent (Anthropic): The Anthropic API client instance.
+
+        Returns:
+            json: The JSON response containing the result of the chat.
+        """
         @app.route("/")
         def index():
+            """
+            Web app index.
+
+            Returns:
+                HTML: The rendered HTML template for the index page.
+            """
             return render_template("index.html")
 
         @app.route("/chat", methods=["POST"])
         def chat():
-            try:
-                user_message = request.json.get("message") if request.json else None
+            """
+            Handles chat messages.
 
+            Returns:
+                json: The JSON response containing the result of the chat.
+            """
+            try:
+                # Extract user message from the request
+                user_message = request.json.get("message") if request.json else None
                 if not user_message:
                     return jsonify({"error": "No message provided"}), 400
-                
+
+                # Create a message using the Anthropic client
                 message = agent.messages.create(
-                    model="claude-2",
-                    max_tokens_to_sample=1000,
+                    model="claude-sonnet-4-20250514",
+                    max_tokens=1024,
+                    system=lib.get_system_prompt(),
                     messages=[
-                        {"role": "system", "content": lib.get_system_prompt()},
                         {"role": "user", "content": user_message},
                     ],
                 )
-                
-                response_text = message.choices[0].message['content']
+
+                # Extract the response text from the message
+                response_text = message.content[0].text
                 return jsonify({"response": response_text})
-            
+
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
