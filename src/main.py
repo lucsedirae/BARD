@@ -1,7 +1,7 @@
 # BARD/src/main.py 
 from os import getenv
 from flask import Flask
-from web_app.router import register_routes
+from web_app.router import Router
 from langchain.agents import create_agent
 import lib
 
@@ -13,7 +13,7 @@ agent = create_agent(
 )
 # Initialize Flask app
 app = Flask(__name__)
-register_routes(app)
+Router.register_routes(app, agent)
 
 # Run the Flask app
 if __name__ == '__main__':
