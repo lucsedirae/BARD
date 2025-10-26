@@ -1,6 +1,4 @@
-// BARD - Building Assistant for Rapid Development
-// Main JavaScript for chat interface
-
+// BARD/src/static/js/index.js
 // Get DOM elements
 const chatBox = document.getElementById('chatBox');
 const messageInput = document.getElementById('messageInput');
