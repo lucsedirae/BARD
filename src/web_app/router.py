@@ -2,6 +2,7 @@
 from flask import render_template, request, jsonify
 import lib
 
+from constants import WEB_APP_TITLE, WEB_HELLO_MESSAGE
 
 class Router:
     @staticmethod
@@ -24,7 +25,7 @@ class Router:
             Returns:
                 HTML: The rendered HTML template for the index page.
             """
-            return render_template("index.html")
+            return render_template("index.html", title=WEB_APP_TITLE, welcome_message=WEB_HELLO_MESSAGE)
 
         @app.route("/chat", methods=["POST"])
         def chat():
