@@ -1,45 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ title }}</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	<!-- Markdown parsing library -->
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>BARD</h1>
-            <img
-            src="{{ url_for('static', filename='img/icon.svg') }}" 
-            alt="Godot Logo" 
-            class="logo"
-            width="40"
-            height="40">
-            <p>Building Assistant for Rapid Development</p>
-        </div>
-        
-        <div class="chat-box" id="chatBox">
-            <div class="message bot">
-                <div class="message-content">
-                    {{ welcome_message }}
-                </div>
-            </div>
-        </div>
+	<div class="container">
+		<div class="header">
+			<h1>BARD</h1>
+			<img
+			src="{{ url_for('static', filename='img/icon.svg') }}" 
+			alt="Godot Logo" 
+			class="logo"
+			width="40"
+			height="40">
+			<p>Building Assistant for Rapid Development</p>
+		</div>
+		
+		<div class="chat-box" id="chatBox">
+			<div class="message bot">
+				<div class="message-content">
+					{{ welcome_message }}
+				</div>
+			</div>
+		</div>
 
-        <div class="loading" id="loading">{{ loading_message }}</div>
+		<div class="loading" id="loading">{{ loading_message }}</div>
 
-        <div class="input-area">
-            <input 
-                type="text" 
-                id="messageInput" 
-                placeholder="Ask me anything about Godot development..."
-                autocomplete="off"
-            >
-            <button id="sendButton">Send</button>
-        </div>
-    </div>
+		<div class="input-area">
+			<input 
+				type="text" 
+				id="messageInput" 
+				placeholder="Ask me anything about Godot development..."
+				autocomplete="off"
+			>
+			<button id="sendButton">Send</button>
+		</div>
+	</div>
 
-    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>

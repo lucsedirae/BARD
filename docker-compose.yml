@@ -9,6 +9,7 @@ services:
       - "5000:5000"
     volumes:
       - ./src:/app/src
+      - ${PATH_TO_PROJECT_FILES}:/mnt/project:ro
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    
+      - PATH_TO_PROJECT_FILES=/mnt/project
