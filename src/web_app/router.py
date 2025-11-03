@@ -2,6 +2,7 @@
 from flask import render_template, request, jsonify
 import uuid
 from datetime import datetime, timedelta
+from langchain_core.messages import AIMessage
 
 from constants import (
 	WEB_APP_TITLE, 
@@ -44,6 +45,41 @@ class Router:
 			"last_access": datetime.now()
 		}
 		return new_session_id, Router.sessions[new_session_id]["state"]
+	
+	@staticmethod
+	def _extract_text_from_message(message):
+		"""
+		Extract text content from a message, handling tool calls properly.
+		
+		Args:
+			message: A LangChain message object
+			
+		Returns:
+			String containing the text content
+		"""
+		# If it's an AIMessage, handle content specially
+		if isinstance(message, AIMessage):
+			content = message.content
+			
+			# If content is a list (tool calls), extract text blocks
+			if isinstance(content, list):
+				text_parts = []
+				for block in content:
+					if isinstance(block, dict) and block.get("type") == "text":
+						text_parts.append(block.get("text", ""))
+					elif hasattr(block, "text"):
+						text_parts.append(block.text)
+				return " ".join(text_parts).strip()
+			
+			# If content is already a string, return it
+			elif isinstance(content, str):
+				return content
+			
+			# Fallback: try to convert to string
+			return str(content)
+		
+		# For other message types, just get content
+		return str(message.content) if hasattr(message, 'content') else str(message)
 	
 	@staticmethod
 	def register_routes(app, agent):
@@ -108,7 +144,12 @@ class Router:
 				}
 				
 				# Extract the last message (agent's response)
-				response_text = result["messages"][-1].content
+				last_message = result["messages"][-1]
+				response_text = Router._extract_text_from_message(last_message)
+				
+				# If we got an empty response, provide a fallback
+				if not response_text or response_text.strip() == "":
+					response_text = "I processed your request but don't have a text response. The tool may have been called successfully."
 				
 				return jsonify({
 					"response": response_text,
@@ -116,6 +157,8 @@ class Router:
 				})
 
 			except Exception as e:
+				import traceback
+				traceback.print_exc()
 				return jsonify({"error": str(e)}), 500
 		
 		@app.route("/clear_session", methods=["POST"])

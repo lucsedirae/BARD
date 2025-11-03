@@ -19,7 +19,18 @@ function addMessage(content, isUser) {
 	
 	const contentDiv = document.createElement('div');
 	contentDiv.className = 'message-content';
-	contentDiv.textContent = content;
+	
+	// For bot messages, parse markdown. For user messages, use plain text
+	if (!isUser && typeof marked !== 'undefined') {
+		// Configure marked options for better rendering
+		marked.setOptions({
+			breaks: true,
+			gfm: true
+		});
+		contentDiv.innerHTML = marked.parse(content);
+	} else {
+		contentDiv.textContent = content;
+	}
 	
 	messageDiv.appendChild(contentDiv);
 	chatBox.appendChild(messageDiv);
