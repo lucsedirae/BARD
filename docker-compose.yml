@@ -6,7 +6,7 @@ services:
     build: .
     container_name: bard-app
     ports:
-      - "5000:5000"
+      - "5001:5000"
     volumes:
       - ./src:/app/src
       - ${PATH_TO_PROJECT_FILES}:/mnt/project:ro

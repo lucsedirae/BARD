@@ -32,13 +32,11 @@ class RAGRetriever:
 		if self.rag.get_document_count() == 0:
 			return "No documents have been indexed yet."
 		
-		# Perform hybrid search
 		results = self.rag.hybrid_search(query, k=k)
 		
 		if not results:
 			return f"No relevant documents found for query: '{query}'"
 		
-		# Format results
 		formatted_results = []
 		for i, doc in enumerate(results, 1):
 			formatted_results.append(

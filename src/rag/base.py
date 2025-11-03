@@ -213,7 +213,6 @@ class BaseRAG(ABC):
 				normalized_score = (max_distance - distance) / max_distance if max_distance > 0 else 1.0
 				doc_scores[doc['path']] = (doc, normalized_score * semantic_weight)
 		
-		# Process keyword results
 		if keyword_results:
 			max_score = max(score for _, score in keyword_results)
 			for doc, score in keyword_results:
