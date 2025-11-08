@@ -1,58 +1,14 @@
-# BARD/src/agent/tools.py
+# BARD/src/agent/tools/code_generation/generate_and_refine_code.py
 import os
+import re
 from pathlib import Path
 from langchain_core.tools import tool
-from typing import Optional
-
-
-# Global retriever instance (will be set during initialization)
-_project_files_retriever: Optional[object] = None
-
-
-def set_project_files_retriever(retriever):
-	"""
-	Set the project files retriever instance.
-	Called during application initialization.
-	
-	Args:
-		retriever: RAGRetriever instance for project files
-	"""
-	global _project_files_retriever
-	_project_files_retriever = retriever
-
-
-@tool
-def search_project_files(query: str) -> str:
-	"""
-	Search through the local Godot project files to find relevant code, scenes, and resources.
-	Use this tool when the user asks about their specific project implementation, code structure,
-	or wants to understand what files exist in their project.
-	
-	Args:
-		query: The search query describing what to look for in the project files.
-	
-	Returns:
-		Relevant file contents from the project.
-	"""
-	if _project_files_retriever is None:
-		return "Project files RAG is not initialized. Please check the configuration."
-	
-	return _project_files_retriever.retrieve(query, k=3)
-
-
-@tool
-def get_godot_info(query: str) -> str:
-	"""
-	Placeholder tool for retrieving Godot engine documentation and API information.
-	
-	Args:
-		query: The information query about Godot engine.
-	
-	Returns:
-		A placeholder response string.
-	"""
-	# TODO: Implement actual Godot documentation RAG
-	return f"Placeholder response for query: '{query}'. This tool will be implemented later."
+from langchain_anthropic import ChatAnthropic
+from langchain_core.messages import HumanMessage, SystemMessage
+from ..retriever import get_project_files_retriever
+from .code_generator import generate_and_refine
+from .helpers import get_project_structure_summary
+from constants import BARD_OUTPUT_DIR, GODOT_VERSION
 
 
 @tool
@@ -82,13 +38,9 @@ def generate_and_refine_code(request: str) -> str:
 	Returns:
 		Status message with generation results and file locations.
 	"""
-	import re
-	from langchain_anthropic import ChatAnthropic
-	from langchain_core.messages import HumanMessage, SystemMessage
-	from agent.code_generator import generate_and_refine
-	from constants import BARD_OUTPUT_DIR, GODOT_VERSION
+	retriever = get_project_files_retriever()
 	
-	if _project_files_retriever is None:
+	if retriever is None:
 		return "Project files RAG is not initialized. Please check the configuration."
 	
 	# Get project path from environment
@@ -130,7 +82,7 @@ Supported file types: .gd (GDScript) and .tscn (scene files)"""
 	
 	# Step 2: Get project structure summary
 	try:
-		project_structure = _get_project_structure_summary(Path(project_path))
+		project_structure = get_project_structure_summary(Path(project_path))
 	except Exception as e:
 		project_structure = f"Error getting project structure: {e}"
 	
@@ -164,7 +116,7 @@ Respond with just the filenames or patterns, one per line, or "NONE" if no exist
 			suggested = suggested.strip()
 			if suggested and not suggested.upper().startswith("NONE"):
 				try:
-					retrieved = _project_files_retriever.retrieve(suggested, k=2)
+					retrieved = retriever.retrieve(suggested, k=2)
 					context_parts.append(f"\nRelevant files for '{suggested}':\n{retrieved}\n")
 				except Exception as e:
 					context_parts.append(f"\nCould not retrieve '{suggested}': {e}\n")
@@ -233,54 +185,3 @@ Respond with just the filenames or patterns, one per line, or "NONE" if no exist
 	summary.append("="*60)
 	
 	return "\n".join(results + summary)
-
-
-def _get_project_structure_summary(project_path: Path) -> str:
-	"""
-	Generate a summary of the project's file structure.
-	
-	Args:
-		project_path: Path to the project root
-	
-	Returns:
-		Formatted string with directory structure
-	"""
-	structure_lines = ["Project Directory Structure:"]
-	
-	try:
-		# Walk through project directory
-		ignore_dirs = {'.godot', '.git', '__pycache__', 'addons', '.import'}
-		
-		for root, dirs, files in os.walk(project_path):
-			# Filter out ignored directories
-			dirs[:] = [d for d in dirs if d not in ignore_dirs]
-			
-			level = root.replace(str(project_path), '').count(os.sep)
-			indent = '  ' * level
-			folder_name = os.path.basename(root) or project_path.name
-			structure_lines.append(f"{indent}{folder_name}/")
-			
-			# Limit depth to avoid too much detail
-			if level < 3:
-				sub_indent = '  ' * (level + 1)
-				for file in sorted(files)[:10]:  # Limit files per directory
-					if not file.startswith('.'):
-						structure_lines.append(f"{sub_indent}{file}")
-				
-				if len(files) > 10:
-					structure_lines.append(f"{sub_indent}... and {len(files) - 10} more files")
-	
-	except Exception as e:
-		structure_lines.append(f"Error reading structure: {e}")
-	
-	return "\n".join(structure_lines[:50])  # Limit total lines
-
-
-def get_tools():
-	"""
-	Returns a list of available tools for the agent.
-	
-	Returns:
-		List of tool instances.
-	"""
-	return [search_project_files, get_godot_info, generate_and_refine_code]
